@@ -13,14 +13,18 @@ members: [ \
 docker exec -it mongo_dbrs_n1 mongosh --port 27011 --eval \
 "rs.initiate({_id:'mongo_dbrs', \
 members: [ \
-  {_id:0, host:'mongo_dbrs_n1:27011'} \
+  {_id:0, host:'mongo_dbrs_n1:27011'}, \
+  {_id:1, host:'mongo_dbrs_n2:27012'}, \
+  {_id:2, host:'mongo_dbrs_n3:27013'} \
 ]});"
 
 ### Инициализация 2го шарда ###
 docker exec -it mongo_dbrs2_n1 mongosh --port 27021 --eval \
 "rs.initiate({_id:'mongo_dbrs2', \
 members: [ \
-  {_id:0, host:'mongo_dbrs2_n1:27021'} \
+  {_id:0, host:'mongo_dbrs2_n1:27021'}, \
+  {_id:1, host:'mongo_dbrs2_n2:27022'}, \
+  {_id:2, host:'mongo_dbrs2_n3:27023'} \
 ]});"
 
 sleep 15

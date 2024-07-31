@@ -3,6 +3,8 @@ services:
 
   ##### Mongo data servers #####
 
+  ##### Shard 1 #####
+
   mongo_dbrs_n1:
     container_name: mongo_dbrs_n1
     image: mongo:7.0.12
@@ -28,6 +30,58 @@ services:
       interval: 5s
       start_period: 10s
 
+  mongo_dbrs_n2:
+    container_name: mongo_dbrs_n2
+    image: mongo:7.0.12
+    restart: always
+    volumes:
+      - mongo_dbrs_n2_data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "mongo_dbrs",
+        "--bind_ip_all",
+        "--port",
+        "27012"
+      ]
+    networks:
+      app-network:
+        ipv4_address: 192.168.7.2
+    ports:
+      - "27012:27012"
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+
+  mongo_dbrs_n3:
+    container_name: mongo_dbrs_n3
+    image: mongo:7.0.12
+    restart: always
+    volumes:
+      - mongo_dbrs_n3_data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "mongo_dbrs",
+        "--bind_ip_all",
+        "--port",
+        "27013"
+      ]
+    networks:
+      app-network:
+        ipv4_address: 192.168.7.3
+    ports:
+      - "27013:27013"
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+
+  ##### Shard 2 #####
+
   mongo_dbrs2_n1:
     container_name: mongo_dbrs2_n1
     image: mongo:7.0.12
@@ -48,6 +102,56 @@ services:
         ipv4_address: 192.168.8.1
     ports:
       - "27021:27021"
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+
+  mongo_dbrs2_n2:
+    container_name: mongo_dbrs2_n2
+    image: mongo:7.0.12
+    restart: always
+    volumes:
+      - mongo_dbrs2_n2_data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "mongo_dbrs2",
+        "--bind_ip_all",
+        "--port",
+        "27022"
+      ]
+    networks:
+      app-network:
+        ipv4_address: 192.168.8.2
+    ports:
+      - "27022:27022"
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+
+  mongo_dbrs2_n3:
+    container_name: mongo_dbrs2_n3
+    image: mongo:7.0.12
+    restart: always
+    volumes:
+      - mongo_dbrs2_n3_data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "mongo_dbrs2",
+        "--bind_ip_all",
+        "--port",
+        "27023"
+      ]
+    networks:
+      app-network:
+        ipv4_address: 192.168.8.3
+    ports:
+      - "27023:27023"
     healthcheck:
       test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 5s
@@ -82,7 +186,11 @@ services:
       start_period: 10s
     depends_on:
       - mongo_dbrs_n1
+      - mongo_dbrs_n2
+      - mongo_dbrs_n3
       - mongo_dbrs2_n1
+      - mongo_dbrs2_n2
+      - mongo_dbrs2_n3
 
   mongo_cfgrs_n2:
     container_name: mongo_cfgrs_n2
@@ -110,7 +218,11 @@ services:
       start_period: 10s
     depends_on:
       - mongo_dbrs_n1
+      - mongo_dbrs_n2
+      - mongo_dbrs_n3
       - mongo_dbrs2_n1
+      - mongo_dbrs2_n2
+      - mongo_dbrs2_n3
 
   mongo_cfgrs_n3:
     container_name: mongo_cfgrs_n3
@@ -138,7 +250,11 @@ services:
       start_period: 10s
     depends_on:
       - mongo_dbrs_n1
+      - mongo_dbrs_n2
+      - mongo_dbrs_n3
       - mongo_dbrs2_n1
+      - mongo_dbrs2_n2
+      - mongo_dbrs2_n3
 
   ##### Mongo router #####
 
@@ -153,7 +269,7 @@ services:
         "27080",
         "--bind_ip_all",
         "--configdb",
-        "mongo_cfgrs/mongo_cfgrs_n1:27091,mongo_cfgrs_n2:27092,mongo_cfgrs_n3:27093"
+        "mongo_cfgrs/mongo_cfgrs_n1:27091,mongo_cfgrs_n2:27091,mongo_cfgrs_n3:27091"
       ]
     networks:
       app-network:
@@ -198,7 +314,11 @@ networks:
 
 volumes:
   mongo_dbrs_n1_data:
+  mongo_dbrs_n2_data:
+  mongo_dbrs_n3_data:
   mongo_dbrs2_n1_data:
+  mongo_dbrs2_n2_data:
+  mongo_dbrs2_n3_data:
   mongo_cfgrs_n1_data:
   mongo_cfgrs_n2_data:
   mongo_cfgrs_n3_data:
