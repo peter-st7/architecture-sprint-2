@@ -1,4 +1,4 @@
-name: mongo-sharding-repl
+name: sharding-repl-cache
 services:
 
   ##### Mongo data servers #####
@@ -285,6 +285,26 @@ services:
       - mongo_cfgrs_n2
       - mongo_cfgrs_n3
 
+  ##### Redis cache #####
+
+  redis:
+    container_name: redis
+    image: redis:7
+    restart: always
+    command:
+      [
+        "redis-server",
+        "--port",
+        "9999",
+        "--bind",
+        "0.0.0.0"
+      ]
+    networks:
+      app-network:
+        ipv4_address: 192.168.30.1
+    ports:
+      - "9999:9999"
+
   ##### Application #####
 
   pymongo_api:
@@ -301,8 +321,10 @@ services:
     environment:
       MONGODB_URL: "mongodb://mongo_router:27080"
       MONGODB_DATABASE_NAME: "somedb"
+      REDIS_URL: "redis://redis:9999"
     depends_on:
       - mongo_router
+      - redis
 
 networks:
   app-network:
